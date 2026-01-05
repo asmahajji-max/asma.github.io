@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculateur Bancaire-Gestion des Comptes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Calculateur Bancaire-Gestion des Comptes</h1>
+
+    <div class="choice-buttons">
+        <button onclick="showModule('epargne')">Compte d'Épargne</button>
+        <button onclick="showModule('courant')">Compte Courant </button>
+        <button onclick="showModule('escompte')">Bordereau d'Escompte</button>
+    </div>
+    <div id="epargne" class="module">
+        <h2>Compte d'Épargne</h2>
+
+        <label>Capital initial C (dt) :</label>
+        <input type="number" id="ep_C0" value="10000" min="0" step="0.01">
+
+        <label>Taux annuel t (%) :</label>
+        <input type="number" id="ep_t" value="4" min="0" step="0.01">
+
+        <label>Date début du placement :</label>
+        <input type="date" id="ep_date_debut">
+
+        <label>Date fin du placement :</label>
+        <input type="date" id="ep_date_fin">
+
+        <button class="btn-calculate" onclick="calculerEpargne()">Calculer</button>
+
+        <h3>Résultats</h3>
+        <table id="epargne_resultat_table">
+            <thead>
+                <tr><th>Donnée</th><th>Valeur</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div id="courant" class="module">
+        <h2>Compte Courant</h2>
+
+        <label>Solde initial C (dt) :</label>
+        <input type="number" id="cc_C0" value="300" step="0.001">
+
+        <label>Taux annuel t (%) :</label>
+        <input type="number" id="cc_t" value="2.25" step="0.01">
+
+        <label>Date début de la période :</label>
+        <input type="date" id="cc_date_debut">
+
+        <label>Date fin de la période :</label>
+        <input type="date" id="cc_date_fin">
+
+        <div class="operations">
+            <h3>Opérations sur le compte</h3>
+
+            <div class="operation-form">
+                <label>Type d'opération :</label>
+                <select id="op_type" onchange="mettreAJourDateValeurAuto()">
+                    <option value="">-- Choisir --</option>
+                    <option value="retrait">Retrait</option>
+                    <option value="versement">Versement</option>
+                </select>
+
+                <label>Libellé de l'opération :</label>
+                <input type="text" id="op_libelle" placeholder="salaire,foyer....">
+
+                <label>Montant (dt) :</label>
+                <input type="number" id="op_montant" step="0.001">
+
+                <label>Date d'opération :</label>
+                <input type="date" id="op_date_operation" onchange="mettreAJourDateValeurAuto()">
+
+                <label>Date de valeur :</label>
+                <input type="date" id="op_date_valeur" readonly>
+            </div>
+
+            <button type="button" onclick="ajouterOperationDepuisChoix()">Ajouter l'opération</button>
+
+            <table id="operations_table">
+                <thead>
+                    <tr>
+                        <th>Libellé</th>
+                        <th>Montant</th>
+                        <th>Type</th>
+                        <th>Date Opér.</th>
+                        <th>Date Valeur</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <button class="btn-calculate" onclick="calculerCompteCourant()">Calculer</button>
+
+        <h3>compte courant</h3>
+        <table id="cc_echelle_table">
+            <thead>
+                <tr>
+                    <th>Date opér.</th>
+                    <th>Date valeur</th>
+                    <th>Opér.</th>
+                    <th>Solde</th>
+                    <th>Nb. jours</th>
+                    <th>TRE (%)</th>
+                    <th>Int. brut</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div id="escompte" class="module">
+        <h2>Bordereau d'escompte</h2>
+        
+        <label for="esc_C0">Valeur Nominale V<sub>n</sub> (dt) :</label>
+        <input type="number" id="esc_C0" value="20000" min="0" step="0.01">
+        
+        <label for="esc_t">Taux d'Escompte Annuel t (%) :</label>
+        <input type="number" id="esc_t" value="5.5" min="0" step="0.01">
+
+        <label for="esc_date_debut">Date de remise à l'escompte :</label>
+        <input type="date" id="esc_date_debut">
+
+        <label for="esc_date_fin">Date d'échéance de l'effet :</label>
+        <input type="date" id="esc_date_fin">
+
+        <div class="checkbox-group">
+            <label>Frais optionnels (commissions) :</label>
+            <input type="checkbox" id="esc_tva_check" onchange="toggleDynamicInput('esc_tva_check', 'esc_tva_montant')"> TVA (sur commission)
+            <input type="checkbox" id="esc_com_endos_check" onchange="toggleDynamicInput('esc_com_endos_check', 'esc_com_endos_montant')"> Commission d'Endos
+            <input type="checkbox" id="esc_com_service_check" onchange="toggleDynamicInput('esc_com_service_check', 'esc_com_service_montant')"> Commission de Service
+        </div>
+
+        <div id="esc_tva_montant" class="dynamic-input" style="display: none;">
+            <label for="esc_tva_val">Taux de TVA (%) :</label>
+            <input type="number" id="esc_tva_val" value="20" min="0" step="0.01">
+        </div>
+
+        <div id="esc_com_endos_montant" class="dynamic-input" style="display: none;">
+            <label for="esc_com_endos_val">Montant Commission d'Endos (dt) :</label>
+            <input type="number" id="esc_com_endos_val" value="10" min="0" step="0.01">
+        </div>
+
+        <div id="esc_com_service_montant" class="dynamic-input" style="display: none;">
+            <label for="esc_com_service_val">Montant Commission de Service (dt) :</label>
+            <input type="number" id="esc_com_service_val" value="5" min="0" step="0.01">
+        </div>
+
+        <button class="btn-calculate" onclick="calculerEscompte()">Calculer</button>
+
+        <h3>Résultats et Bordereau d'escompte</h3>
+        <table id="escompte_resultat_table">
+            <thead>
+                <tr><th>Rubrique</th><th>Montant</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
